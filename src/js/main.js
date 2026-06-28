@@ -26,6 +26,7 @@ import { emtyState, spinner } from "./ui/components.js";
 
 const meals = new Mealdb();
 
+// onload fun
 async function onload() {
   spinner("recipes-grid");
   let resapices = await meals.get25Meals();
@@ -35,7 +36,7 @@ async function onload() {
 }
 
 onload();
-// Search
+// Search meals
 searchInput.addEventListener("input", async () => {
   const searchedMeals = await meals.search(searchInput.value);
 
@@ -70,7 +71,7 @@ searchInput.addEventListener("input", async () => {
     console.log(resapices);
   }
 });
-// Area
+// get by Area
 for (let i = 0; i < areaBtns.length; i++) {
   areaBtns[i].addEventListener("click", async (e) => {
     areaBtns.forEach((btn) => {
@@ -116,7 +117,7 @@ async function getmealByid(x) {
   console.log(x);
 }
 
-// Cat
+// get by Cat
 for (let i = 0; i < mealCat.length; i++) {
   mealCat[i].addEventListener("click", async (e) => {
     let userChoise = e.currentTarget.dataset.category;
@@ -220,6 +221,7 @@ window.BackToRecipes = function () {
   document.getElementById("meal-categories-section").classList.remove("hidden");
 };
 
+// barcode btn
 lookupBtn.addEventListener("click", async () => {
   let mealByBarcode = await meals.getProductsByBarcode(barcodeInput.value);
   console.log(mealByBarcode);
@@ -227,6 +229,7 @@ lookupBtn.addEventListener("click", async () => {
   // foodLog();
 });
 
+// barcode modal
 document
   .getElementById("productByBarcode-modal")
   .addEventListener("click", (e) => {
@@ -276,6 +279,7 @@ function openBarCodeModal(product) {
   modal.classList.add("flex");
 }
 let barCodeProduct;
+// display barcode product
 function createProductModal(product) {
   console.log("proHere", product);
   barCodeProduct = {
@@ -439,34 +443,36 @@ document.addEventListener("click", (e) => {
   }
 });
 
+// display modal of product searched by name
 document
   .getElementById("search-product-btn")
   .addEventListener("click", async () => {
-    let res=await meals.getProductsByName(productSearchInput.value.toLowerCase());
-    console.log('res',res);
-    
-     document.querySelectorAll('.product-card').forEach((card)=>{
-        card.addEventListener('click',(e)=>{
-         for (let i = 0; i < res.length; i++) {
-          if(e.currentTarget.dataset.barcode===res[i].barcode)
-             openBarCodeModal(res[i])
-             
-         }
-          
-        })
-      })
+    let res = await meals.getProductsByName(
+      productSearchInput.value.toLowerCase(),
+    );
+    console.log("res", res);
+
+    document.querySelectorAll(".product-card").forEach((card) => {
+      card.addEventListener("click", (e) => {
+        for (let i = 0; i < res.length; i++) {
+          if (e.currentTarget.dataset.barcode === res[i].barcode)
+            openBarCodeModal(res[i]);
+        }
+      });
+    });
   });
 
+// search product by name btn
 document
   .getElementById("product-search-input")
   .addEventListener("keydown", (e) => {
-
     if (e.key === "Enter") {
       e.preventDefault();
       document.getElementById("search-product-btn").click();
     }
   });
 
+// display products by NutriScore A B C E D
 document.querySelectorAll("#NutriScore button").forEach((score) => {
   score.addEventListener("click", (e) => {
     console.log(e.currentTarget.dataset.grade);
@@ -478,6 +484,7 @@ document.querySelectorAll("#NutriScore button").forEach((score) => {
   });
 });
 
+// display products by cat
 document.querySelectorAll("#productCategory button").forEach((btn) => {
   btn.addEventListener("click", () => {
     spinner("products-grid");
@@ -633,6 +640,7 @@ window.logMeal = async function (id) {
   });
 };
 
+// calc total nutritions
 function total() {
   // const today = new Date().toDateString();
   // const lastDay = localStorage.getItem("lastDay");
@@ -671,6 +679,7 @@ function total() {
   return total;
 }
 
+// log meals and products in food log section
 function foodLog() {
   let Total = total();
   document.getElementById("logCalories").innerHTML =
@@ -686,19 +695,17 @@ function foodLog() {
     `${Math.min((Total.carb / 250) * 100, 100)}%`;
   document.getElementById("fatW").style.width =
     `${Math.min((Total.fat / 65) * 100, 100)}%`;
-  if (Total.calories >= 2000) {
-    document.getElementById("calW").classList.add("bg-red-500");
-  }
-  if (Total.protein >= 50) {
-    document.getElementById("proW").classList.add("bg-red-500");
-  }
-  if (Total.fat >= 65) {
-    document.getElementById("fatW").classList.add("bg-red-500");
-  }
-  if (Total.carb >= 250) {
-    document.getElementById("carbW").classList.add("bg-red-500");
-  }
+  let bars = [
+    { total: Total.calories, max: 2000, id: "calW" },
+    { total: Total.protein, max: 50, id: "proW" },
+    { total: Total.fat, max: 65, id: "fatW" },
+    { total: Total.carb, max: 250, id: "carbW" },
+  ];
 
+  console.log(Total);
+  bars.forEach(({ total, max, id }) => {
+    document.getElementById(id).classList.toggle("bg-red-500", total >= max);
+  });
   let box = ``;
   for (let i = 0; i < loggedMeals.length; i++) {
     document.getElementById("loggedCount").innerHTML =
@@ -744,6 +751,7 @@ function foodLog() {
   weekOverview();
 }
 
+// display weekly overveiw in food log section
 function weekOverview() {
   const weekContainer = document.getElementById("weekOverview");
   let Total = total();
@@ -791,19 +799,19 @@ const day = document.querySelectorAll(".dayDate");
 
 const today = new Date().getDate().toString();
 
-
-
+// mark today's day of the week
 for (let i = 0; i < day.length; i++) {
   console.log(day[i].textContent.trim());
-console.log(today);
+  console.log(today);
   if (day[i].textContent.trim() === today) {
-    week[i].classList.add('today-bg');
+    week[i].classList.add("today-bg");
     break;
   }
 }
 
 document.getElementById("clear-foodlog").addEventListener("click", clearAll);
 
+// clear loggedMeals
 async function clearAll() {
   const result = await Swal.fire({
     title: "Clear all meals?",
@@ -833,20 +841,25 @@ async function clearAll() {
   }
 }
 
+// delete one meal
 window.deleteMeal = function (id) {
-  console.log("ok");
-  let logs = JSON.parse(localStorage.getItem("loggedMeals"));
+  let logs = JSON.parse(localStorage.getItem("loggedMeals")) || [];
+
   logs.splice(id, 1);
+
   localStorage.setItem("loggedMeals", JSON.stringify(logs));
+
+  loggedMeals = logs;
+
   foodLog();
 };
 
+// log meal in meal detalies
 window.LogMeal = async function (id) {
   let [meal] = await meals.getById(id);
 
   foodLog();
 };
-
 
 document.querySelector(".quick-log-btn").addEventListener("click", () => {
   goToRec();
@@ -890,7 +903,7 @@ function goToRec() {
   document.getElementById("meal-categories-section").classList.remove("hidden");
   document.getElementById("all-recipes-section").classList.remove("hidden");
 }
-
+// grid view and column view
 const recipesGrid = document.getElementById("recipes-grid");
 const gridBtn = document.getElementById("grid-view-btn");
 const listBtn = document.getElementById("list-view-btn");
