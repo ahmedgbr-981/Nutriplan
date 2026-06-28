@@ -439,18 +439,22 @@ document.addEventListener("click", (e) => {
   }
 });
 
-document.getElementById("search-product-btn").addEventListener("click", async() => {
- await meals.getProductsByName(productSearchInput.value.toLowerCase());
-});
+document
+  .getElementById("search-product-btn")
+  .addEventListener("click", async () => {
+    await meals.getProductsByName(productSearchInput.value.toLowerCase());
+  });
 
-document.getElementById('product-search-input').addEventListener("keydown", (e) => {
-  console.log('ok');
-  
-  if (e.key === "Enter") {
-    e.preventDefault();
-    document.getElementById("search-product-btn").click();
-  }
-});
+document
+  .getElementById("product-search-input")
+  .addEventListener("keydown", (e) => {
+    console.log("ok");
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.getElementById("search-product-btn").click();
+    }
+  });
 
 document.querySelectorAll("#NutriScore button").forEach((score) => {
   score.addEventListener("click", (e) => {
@@ -584,7 +588,6 @@ window.logMeal = async function (id) {
 
   const logBtn = document.getElementById("confirm-log-meal");
   logBtn.addEventListener("click", () => {
-    
     const servings = parseFloat(document.getElementById("meal-servings").value);
 
     let loggedMeal = {
@@ -620,45 +623,41 @@ window.logMeal = async function (id) {
 };
 
 function total() {
-  const today = new Date().toDateString();
-  const lastDay = localStorage.getItem("lastDay");
+  // const today = new Date().toDateString();
+  // const lastDay = localStorage.getItem("lastDay");
 
-  if (lastDay !== today) {
-    // New day: reset logged meals
-    loggedMeals = [];
-    localStorage.setItem("loggedMeals", JSON.stringify(loggedMeals));
-    localStorage.setItem("lastDay", today);
-  } else {
-    loggedMeals = JSON.parse(localStorage.getItem("loggedMeals")) || [];
-  }
+  // if (lastDay !== today) {
+  //   // New day: reset logged meals
+  //   loggedMeals = [];
+  //   localStorage.setItem("loggedMeals", JSON.stringify(loggedMeals));
+  //   localStorage.setItem("lastDay", today);
+  // } else {
+  //   loggedMeals = JSON.parse(localStorage.getItem("loggedMeals")) || [];
+  // }
+
+  loggedMeals = JSON.parse(localStorage.getItem("loggedMeals")) || [];
 
   console.log("total", loggedMeals);
 
-  if (loggedMeals.length) {
-    let total = {
-      protein: 0,
-      fat: 0,
-      carb: 0,
-      calories: 0,
-    };
-
-    for (let i = 0; i < loggedMeals.length; i++) {
-      total.protein += loggedMeals[i].protein;
-      total.fat += loggedMeals[i].fat;
-      total.carb += loggedMeals[i].carbs;
-      total.calories += loggedMeals[i].calories;
-    }
-
-    console.log(total);
-    return total;
-  }
-
-  return {
+  let total = {
     protein: 0,
     fat: 0,
     carb: 0,
     calories: 0,
   };
+
+  const today = new Date().toDateString();
+
+  for (const meal of loggedMeals) {
+    if (new Date(meal.date).toDateString() === today) {
+      total.protein += meal.protein;
+      total.fat += meal.fat;
+      total.carb += meal.carbs;
+      total.calories += meal.calories;
+    }
+  }
+
+  return total;
 }
 
 function foodLog() {
@@ -731,7 +730,65 @@ function foodLog() {
                     </div>`;
   }
   document.getElementById("logged-items-list").innerHTML = box;
-  weekOverview()
+  weekOverview();
+}
+
+function weekOverview() {
+  const weekContainer = document.getElementById("weekOverview");
+  let Total = total();
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const calories = [0, 0, 0, 0, 0, 0, 0];
+
+  const today = new Date();
+  const firstDay = new Date(today);
+  firstDay.setDate(today.getDate() - today.getDay());
+  firstDay.setHours(0, 0, 0, 0);
+
+  for (const meal of loggedMeals) {
+    const mealDate = new Date(meal.date);
+    mealDate.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.floor((mealDate - firstDay) / (1000 * 60 * 60 * 24));
+
+    if (diffDays >= 0 && diffDays < 7) {
+      calories[diffDays] += meal.calories;
+    }
+  }
+
+  weekContainer.innerHTML = "";
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(firstDay);
+    date.setDate(firstDay.getDate() + i);
+
+    weekContainer.innerHTML += `
+        <div class="text-center eachDay">
+            <p class="text-xs text-black mb-1">${dayNames[date.getDay()]}</p>
+            <p class="text-sm font-medium text-black dayDate">${date.getDate()}</p>
+            <div class="mt-2 ">
+                <p class="text-green-500 font-bold text-xl">${calories[i]}</p>
+                <p class="text-xs text-black">kcal</p>
+            </div>
+        </div>
+    `;
+  }
+}
+weekOverview();
+
+const week = document.querySelectorAll(".eachDay");
+const day = document.querySelectorAll(".dayDate");
+
+const today = new Date().getDate().toString();
+
+
+
+for (let i = 0; i < day.length; i++) {
+  console.log(day[i].textContent.trim());
+console.log(today);
+  if (day[i].textContent.trim() === today) {
+    week[i].classList.add('today-bg');
+    break;
+  }
 }
 
 document.getElementById("clear-foodlog").addEventListener("click", clearAll);
@@ -779,46 +836,6 @@ window.LogMeal = async function (id) {
   foodLog();
 };
 
-function weekOverview() {
-  const weekContainer = document.getElementById("weekOverview");
-  let Total = total();
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const calories = [0, 0, 0, 0, 0, 0, 0];
-
-  const today = new Date();
-  const firstDay = new Date(today);
-  firstDay.setDate(today.getDate() - today.getDay());
-  firstDay.setHours(0, 0, 0, 0);
-
-  for (const meal of loggedMeals) {
-    const mealDate = new Date(meal.date);
-
-    const diffDays = Math.floor((mealDate - firstDay) / (1000 * 60 * 60 * 24));
-
-    if (diffDays >= 0 && diffDays < 7) {
-      calories[diffDays] += meal.calories;
-    }
-  }
-
-  weekContainer.innerHTML = "";
-
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(firstDay);
-    date.setDate(firstDay.getDate() + i);
-
-    weekContainer.innerHTML += `
-        <div class="text-center">
-            <p class="text-xs text-gray-500 mb-1">${dayNames[date.getDay()]}</p>
-            <p class="text-sm font-medium text-gray-900">${date.getDate()}</p>
-            <div class="mt-2 ">
-                <p class="text-green-500 font-bold text-xl">${calories[i]}</p>
-                <p class="text-xs text-gray-300">kcal</p>
-            </div>
-        </div>
-    `;
-  }
-}
-weekOverview();
 
 document.querySelector(".quick-log-btn").addEventListener("click", () => {
   goToRec();
@@ -884,15 +901,13 @@ listBtn.addEventListener("click", () => {
   gridBtn.classList.remove("bg-white", "rounded-md", "shadow-sm");
 });
 
+document.querySelectorAll("#NutriScore button").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    document.querySelectorAll("#NutriScore button").forEach((btn) => {
+      btn.classList.remove("bg-red-500");
+    });
+    e.currentTarget.classList.add("bg-red-500");
+  });
+});
 
 // meals.getProductsByCats()
-
-document.querySelectorAll('#NutriScore button').forEach((btn)=>{
-  btn.addEventListener('click',(e)=>{
-   document.querySelectorAll('#NutriScore button').forEach((btn)=>{
-    btn.classList.remove('bg-red-500')
-   })
-    e.currentTarget.classList.add('bg-red-500')
-    
-  })
-})
