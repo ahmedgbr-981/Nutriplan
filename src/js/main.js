@@ -224,7 +224,7 @@ lookupBtn.addEventListener("click", async () => {
   let mealByBarcode = await meals.getProductsByBarcode(barcodeInput.value);
   console.log(mealByBarcode);
   openBarCodeModal(mealByBarcode);
-  foodLog();
+  // foodLog();
 });
 
 document
@@ -285,9 +285,9 @@ function createProductModal(product) {
 
     date: new Date().toLocaleString(),
     calories: Math.round(product.nutrients.calories),
-    protein: +product.nutrients.protein,
-    carbs: +product.nutrients.carbs,
-    fat: +product.nutrients.fat,
+    protein: Math.floor(product.nutrients.protein),
+    carbs: Math.floor(product.nutrients.carbs),
+    fat: Math.floor(product.nutrients.fat),
   };
 
   return `
@@ -319,7 +319,7 @@ function createProductModal(product) {
                         
                             <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background-color: #e63e1120">
                                 <span class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style="background-color: #e63e11">
-                                    ${product.novaGroup || "unKonwn"}
+                                    ${product.novaGroup || "N/A"}
                                 </span>
                                 <div>
                                     <p class="text-xs font-bold" style="color: #e63e11">NOVA</p>
@@ -442,13 +442,24 @@ document.addEventListener("click", (e) => {
 document
   .getElementById("search-product-btn")
   .addEventListener("click", async () => {
-    await meals.getProductsByName(productSearchInput.value.toLowerCase());
+    let res=await meals.getProductsByName(productSearchInput.value.toLowerCase());
+    console.log('res',res);
+    
+     document.querySelectorAll('.product-card').forEach((card)=>{
+        card.addEventListener('click',(e)=>{
+         for (let i = 0; i < res.length; i++) {
+          if(e.currentTarget.dataset.barcode===res[i].barcode)
+             openBarCodeModal(res[i])
+             
+         }
+          
+        })
+      })
   });
 
 document
   .getElementById("product-search-input")
   .addEventListener("keydown", (e) => {
-    console.log("ok");
 
     if (e.key === "Enter") {
       e.preventDefault();

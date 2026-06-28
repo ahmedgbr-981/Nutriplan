@@ -472,10 +472,9 @@ export class Mealdb {
 
     console.log(data.results);
     let results = data.results;
-
     let box = ``;
     for (let i = 0; i < results.length; i++) {
-      box += ` <div
+      box += `<div
               class="product-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group"
               data-barcode="${results[i].barcode}">
               <div class="relative h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
@@ -535,6 +534,8 @@ export class Mealdb {
     document.getElementById("products-grid").innerHTML = box;
     document.getElementById("products-count").innerHTML =
       `Found ${results.length} product of ${name}`;
+    return results;
+     
   }
   async getProductsByNutriScore(score, name) {
     spinner("products-grid");
